@@ -1,10 +1,16 @@
 package com.itheima.crm.web.action;
 
+import java.io.File;
+import java.io.IOException;
+
+import org.apache.commons.io.FileUtils;
 import org.hibernate.criterion.DetachedCriteria;
 
 import com.itheima.crm.domain.Customer;
 import com.itheima.crm.domain.PageBean;
 import com.itheima.crm.service.CustomerService;
+import com.itheima.crm.utils.UploadUtils;
+
 import com.opensymphony.xwork2.ActionContext;
 import com.opensymphony.xwork2.ActionSupport;
 import com.opensymphony.xwork2.ModelDriven;
@@ -14,7 +20,6 @@ public class CustomerAction extends ActionSupport implements ModelDriven<Custome
 	private Customer customer = new Customer();
 	@Override
 	public Customer getModel() {
-		// TODO Auto-generated method stub
 		return customer;
 	}
 
@@ -46,9 +51,46 @@ public class CustomerAction extends ActionSupport implements ModelDriven<Custome
 		return "saveUI";
 	}
 
+	/*
+	 * 文件上传的三个属性
+	 */
+	private String uploadFileName;
+	private File upload;
+	private String uploadContentType;
 	
+	
+	public void setUploadFileName(String uploadFileName) {
+		this.uploadFileName = uploadFileName;
+	}
+
+	public void setUpload(File upload) {
+		this.upload = upload;
+	}
+
+	public void setUploadContentType(String uploadContentType) {
+		this.uploadContentType = uploadContentType;
+	}
+
 	//保存客户
-	public String save() {
+	public String save() throws IOException {
+		//上传图片
+		if (upload != null) {
+			//上传文件
+			//设置文件上传路径
+			String path = "E:/upload";
+			String uuidFileName = UploadUtils.getUuidFileName(uploadFileName);
+			String realPath = UploadUtils.getPath(uuidFileName);
+			
+			//创建目录
+			String url = path+realPath;
+			File file = new File(url);
+			if (!file.exists()) {
+				file.mkdirs();
+			}
+			File dictFile = new File(url+"/"+uuidFileName);
+			FileUtils.copyFile(upload, dictFile);
+		}  
+		//保存客户
 		customerService.save(customer);
 		return NONE;
 	}
